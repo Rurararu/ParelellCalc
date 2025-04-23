@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  users_service:
+    build: ./Users_service
+    container_name: users_service
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./instance:/app/instance
+      - ./model.py:/app/model.py
+    depends_on:
+      - db_initializer
+
+  agents_service:
+    build: ./Agents_service
+    container_name: agents_service
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./instance:/app/instance
+      - ./model.py:/app/model.py
+    depends_on:
+      - db_initializer
+
+  tours_service:
+    build: ./Tours_service
+    container_name: tours_service
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./instance:/app/instance
+      - ./model.py:/app/model.py
+    depends_on:
+      - db_initializer
+
+  booking_service:
+    build: ./Booking_service
+    container_name: booking_service
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./instance:/app/instance
+      - ./model.py:/app/model.py
+    depends_on:
+      - db_initializer
+
+  db_initializer:
+    image: python:3.12.4
+    container_name: db_initializer
+    volumes:
+      - ./instance:/app/instance
+      - ./model.py:/app/model.py
+    working_dir: /app
+    command: python model.py
