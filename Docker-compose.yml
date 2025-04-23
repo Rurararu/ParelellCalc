@@ -44,6 +44,9 @@ services:
       - ./model.py:/app/model.py
     depends_on:
       - db_initializer
+      - tours_service
+      - agents_service
+
 
   db_initializer:
     image: python:3.12.4
