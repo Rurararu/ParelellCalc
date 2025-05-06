@@ -1,12 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api, fields, marshal_with
 import sys
+import redis
+import json
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from model import app, db, Customer, Agent, Tour, PaidTour, Discount
 
 api = Api(app)
+redis_client = redis.Redis(host='redis', port=6379)
 
 tour_fields = {
     'id': fields.Integer,
@@ -50,7 +54,32 @@ class Tours(Resource):
     
     @marshal_with(tour_fields)
     def get(self):
-        return Tour.query.all()
+        cache_key = "tours:all"
+        cached_data = redis_client.get(cache_key)
+
+        if cached_data:
+            # app.logger.info("Отримано з Redis")
+            time.sleep(2)
+            tours = json.loads(cached_data)
+            return [Tour(**tour) for tour in tours]
+
+        # app.logger.info("Отримано з БД")
+        time.sleep(5)
+        tours = Tour.query.all()
+
+        tours_data = []
+        for tour in tours:
+            tours_data.append({
+                'id': tour.id,
+                'name': tour.name,
+                'description': tour.description,
+                'price': tour.price,
+                'status': tour.status,
+                'agent_id': tour.agent_id
+            })
+
+        redis_client.setex(cache_key, 60, json.dumps(tours_data))  
+        return tours
     
 
 class ToursResource(Resource):

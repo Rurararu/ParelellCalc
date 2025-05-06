@@ -33,6 +33,7 @@ services:
       - ./model.py:/app/model.py
     depends_on:
       - db_initializer
+      - redis
 
   booking_service:
     build: ./Booking_service
@@ -56,3 +57,9 @@ services:
       - ./model.py:/app/model.py
     working_dir: /app
     command: python model.py
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
